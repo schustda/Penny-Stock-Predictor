@@ -49,7 +49,7 @@ class PlotData(object):
 
         plt.style.use('ggplot')
         plt.bar(x,self.data.post_number,label = 'ihub posts',alpha = 0.5)
-        plt.bar(x,self.data.dollar_volume,label = 'ihub posts',alpha = 0.5)
+        plt.bar(x,self.data.dollar_volume,label = 'volume',alpha = 0.5)
         plt.plot(x,self.data.ohlc,'r', label = 'stock price')
         # plt.plot(x,self.data.dollar_volume,'k', label = 'volume')
 
@@ -115,9 +115,9 @@ class PlotData(object):
 
 if __name__ == '__main__':
     plt.close('all')
-    start_date = '20120101'
-    end_date = '20140519'
-    ticker_symbol = 'cbyi'
+    start_date = '20140101'
+    end_date = '20150101'
+    ticker_symbol = 'mine'
 
     stock = PlotData(ticker_symbol,start_date,end_date)
     df = stock.data

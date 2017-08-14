@@ -1,5 +1,11 @@
 # Penny-Stock-Predictor
 
+
+Questions:
+Q: How do I treat weekends and market holidays?
+A: Remove them. The message boards are much less active on those days.
+
+
 ### GOAL:
 Predict a massive change in stock price for a given small cap stock
 ### DATA SETS :

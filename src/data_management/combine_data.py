@@ -2,15 +2,12 @@ import pandas as pd
 import numpy as np
 from math import isnan
 
-
-
-
 class CombineData(object):
 
     def __init__(self,ticker_symbol):
         self.ticker_symbol = ticker_symbol
         self.ihub_posts = pd.read_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
-        self.stock_info = pd.read_csv('data/raw_data/stock/'+self.ticker_symbol+'.csv')
+        self.stock_info = pd.read_csv('data/raw_data/stock/'+self.ticker_symbol+'.csv',index_col=0)
 
     def _add_deleted_fill_na(self):
         '''
@@ -61,16 +58,12 @@ class CombineData(object):
         self.stock_info.index = self.stock_info.Date
         self.stock_info.drop(['Open','Close','High','Low','Date','Volume'],axis=1,inplace=True)
 
-
         self.stock_info.index = pd.to_datetime(self.stock_info.index)
 
     def fill_nulls(self, df):
 
-
         df.post_number.fillna(0,inplace = True)
 
-        holidays = pd.read_csv('data/stock_market_holidays.csv')
-        holiday_set = pd.to_datetime(holidays.date)
 
         weekends = set([5,6])
 
@@ -78,10 +71,17 @@ class CombineData(object):
             if all([isnan(df.loc[day]['ohlc']),df.loc[day]['weekday'] not in weekends, day not in holiday_set]):
                 df = df.set_value(day,'ohlc',0)
                 df = df.set_value(day,'dollar_volume',0)
+
         return df
 
+    def _remove_weekends_and_holidays(self, df):
+        weekends = set(df[df.weekday > 4].index)
+        holidays = set(pd.to_datetime(pd.read_csv('data/stock_market_holidays.csv').date))
+        return df.drop(holidays.union(weekends),errors='ignore')
 
     def compile_data(self):
+        print ('compiling data for '+self.ticker_symbol+'...')
+
         self._add_deleted_fill_na()
         self._calculate_ohlc()
         self.ihub_posts = self.ihub_posts.groupby('date').count().post_number
@@ -93,11 +93,11 @@ class CombineData(object):
 
         self.combined_data = self.df_date.join(self.ihub_posts).join(self.stock_info)
         self.combined_data['weekday'] = self.combined_data.index.weekday
-        self.combined_data = self.fill_nulls(self.combined_data)
+        self.combined_data = self._remove_weekends_and_holidays(self.combined_data)
         self.combined_data.index.name = 'date'
         self.combined_data.to_csv('data/data/'+self.ticker_symbol+'.csv')
 
-
+        print ('Complete! \n')
 
 if __name__ == '__main__':
     cbyi = CombineData('cbyi')
