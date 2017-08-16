@@ -3,9 +3,10 @@ import pandas as pd
 
 class DefineTarget(object):
 
-    def __init__(self,ticker_symbol):
-        self.ticker_symbol = ticker_symbol
-        self.data = self._import_data()
+    def __init__(self,data):
+        self.data = data
+        # self.ticker_symbol = ticker_symbol
+        # self.data = self._import_data()
         self.stock_size = self._big_or_small()
         self.target = self.add_target()
 
@@ -19,11 +20,11 @@ class DefineTarget(object):
         else:
             return 'small_cap'
 
-    def _import_data(self):
-        df = pd.read_csv('data/data/'+self.ticker_symbol+'.csv')
-        df.dropna(inplace=True)
-        df.set_index('date',inplace=True)
-        return df
+    # def _import_data(self):
+    #     df = pd.read_csv('data/data/'+self.ticker_symbol+'.csv')
+    #     df.dropna(inplace=True)
+    #     df.set_index('date',inplace=True)
+    #     return df
 
     def add_target(self):
         target = []
@@ -32,22 +33,21 @@ class DefineTarget(object):
             ohlc = self.data.iloc[i].ohlc
             wk_avg1 = self.data.iloc[i+1:i+6].ohlc.mean()
             wk_avg2 = self.data.iloc[i+1:i+11].ohlc.mean()
-            if wk_avg1 > ohlc * 3 and wk_avg2 > ohlc * 2:
+            if wk_avg1 > ohlc * 2 and wk_avg2 > ohlc * 1.5:
                 target.append(1)
                 print ('got one!')
             else:
                 target.append(0)
-        return target
+        na = [None]*11
+        target.extend(na)
         self.data['target'] = target
-
+        return target
 
 
 if __name__ == '__main__':
     target = DefineTarget('cbyi')
     df = target.data
-
-
-
+    t = target.target
 #
 # for day in df.index:
 #     two_wk_avg =

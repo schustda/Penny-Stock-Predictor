@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from math import isnan
+from src.create_training_data.define_target import DefineTarget
 
 class CombineData(object):
 
@@ -95,6 +96,10 @@ class CombineData(object):
         self.combined_data['weekday'] = self.combined_data.index.weekday
         self.combined_data = self._remove_weekends_and_holidays(self.combined_data)
         self.combined_data.index.name = 'date'
+
+        t = DefineTarget(self.combined_data)
+        self.combined_data['target'] = t.target
+
         self.combined_data.to_csv('data/data/'+self.ticker_symbol+'.csv')
 
         print ('Complete! \n')
@@ -106,34 +111,3 @@ if __name__ == '__main__':
     df2 = cbyi.ihub_posts
     df3 = cbyi.df_date
     df4 = cbyi.combined_data
-
-
-        #fill nulls with date above
-
-    #     new_df = df.copy()
-    #     total_num_posts = df.post_number.max()
-    #     post_set = set(df.post_number)
-    #
-    #     for i in range(total_num_posts):
-    #         if i not in post_set:
-    #             print (i)
-    #
-    #
-    #     post_set = set(df.post_number)
-    #     all_posts = set(range(df.post_number.max()))
-    #
-    # df = pd.read_csv('data/ihub/Cal-Bay-International-Inc-CBYI-5520.csv')
-    # num_not_deleted = set(df.post_number)
-    # num_posts = set(range(1,df.post_number.max()))
-    # deleted_post_numbers = num_posts.difference(num_not_deleted)
-    # ddf = pd.DataFrame(np.nan, index=range(len(deleted_post_numbers)), columns=df.columns.tolist())
-    # ddf.post_number = deleted_post_numbers
-    # ddf.subject = '<DELETED>'
-    # ddf.username = '<DELETED>'
-    # df2 = pd.concat([df,ddf])
-    # df2.sort_values('post_number',inplace = True)
-    # # df.drop_duplicates(inplace = True)
-    # # df.index = df.post_number
-    # # df.drop('post_number',axis = 1,inplace = True)
-
-#114297

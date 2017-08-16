@@ -95,19 +95,15 @@ class IhubData(object):
         a = int(percent/2)
         b = 50-a
         min_remaining = int(time_elapsed/percent*(100-percent)/60)
-        print ('|'+ a*'=' + b*'-' + '| ' + str(percent) + '% - ' + str(min_remaining) + ' minutes remaining')
+        print ('|'+ a*'=' + b*'-' + '| ' + str(percent) + '% - ' + str(min_remaining) + ' minute(s) remaining')
 
     def pull_posts(self):
         '''
-        Parameters
-        ----------
-
         Output
         ------
         df: pandas dataframe
         '''
 
-        print('pulling posts for ' + self.ticker_symbol)
         t, original_time, posts_per_page = time(), time(), 50-self.num_pinned
 
         # Determines whether or not the file has already been created
@@ -115,16 +111,21 @@ class IhubData(object):
         path = pathlib.Path('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
 
         if not path.is_file():
-            # if this is the first time this ticker symbole has been run
+
+            # if this is the first time this ticker symbol has been run
+            print('pulling posts for ' + self.ticker_symbol)
             df, error_list = self._get_page(posts_per_page)
             start_page = posts_per_page * 2
 
         else:
             # if the file has already been created, import it to update and
             # transform it back to native format
+            print('updating posts for ' + self.ticker_symbol)
             df = pd.read_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
+            df['date'] = pd.to_datetime(df['date']).dt.date
 
             start_page = df.post_number.max()+posts_per_page-1
+            end_page = self.num_posts
             missing_posts = self.num_posts - df.post_number.max()
 
             df.columns = [0,1,2,3]
@@ -133,19 +134,20 @@ class IhubData(object):
 
             error_list = []
 
+            # Removing erros caused when there are fewer than 50 posts to update
             if start_page > self.num_posts:
-                start_page = self.num_posts-1
+                end_page +=1
+                start_page = self.num_posts
 
         # iterate through all of the pages
-        for post_num in range(start_page,self.num_posts,posts_per_page):
-
+        for post_num in range(start_page,end_page,posts_per_page):
             # pull from the specific page and add it to the existing dataframe
             page_df, error_list = self._get_page(post_num, error_list = error_list)
             df = pd.concat([df,page_df])
 
             if self.verbose:
                 if time() > t + 60:
-                    percent = int(post_num*100/self.num_posts)
+                    percent = int((post_num-start_page)/(end_page-start_page)*100)
                     time_elapsed = time() - original_time
                     self._verbose(percent, original_time, time_elapsed)
                     t = time()
@@ -177,91 +179,39 @@ class IhubData(object):
 
         df.to_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
 
-    #
-    #
-    # def update_csv(self):
-    #     '''
-    #     Pulls the existing message board csv and updates it with any messages
-    #     that have been posted that are not currently in the file
-    #     '''
-    #     former_df = pd.read_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
-    #
-    #
-    #
-    #
-    # def create_csv(self):
-    #     '''
-    #     Creates the csv file for the specific ticker symbol within data/ihub/message_board
-    #     '''
-    #     print('pulling posts for ' + self.ticker_symbol)
-    #     first, t, original_time, posts_per_page = True, time(), time(), 51-self.num_pinned
-    #     for post_num in range(posts_per_page-1,self.num_posts,posts_per_page):
-    #
-    #
-    #         if first:
-    #             df, error_list = self._get_page(post_num)
-    #             first = False
-    #
-    #
-    #         else:
-    #             page_df, error_list = self._get_page(post_num, error_list = error_list)
-    #             df = pd.concat([df,page_df])
-    #
-    #         if self.verbose:
-    #             if time() > t + 60:
-    #                 percent = int(post_num*100/self.num_posts)
-    #                 time_elapsed = time() - original_time
-    #                 self._verbose(percent, original_time, time_elapsed)
-    #                 t = time()
-    #
-    #     final_error_list = []
-    #     shallow_error_list = error_list.copy()
-    #     for post_num in shallow_error_list:
-    #         page_df, final_error_list = self._get_page(post_num, error_list = final_error_list)
-    #         df = pd.concat([df,page_df])
-    #
-    #     df.sort_index(inplace=True)
-    #     cols = ['post_number','subject','username','date']
-    #     df.columns = cols[1:4]
-    #     df.index.name = cols[0]
-    #     df.drop_duplicates(inplace = True)
-    #     df.to_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
-    #     print (self.ticker_symbol + ' complete! \n')
-    #     if len(final_error_list) != 0:
-    #         print('Errors encountered on the following pages:' + final_error_list)
-
 if __name__ == '__main__':
 
-
-    cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
-    mine = 'Minerco-Inc-MINE-17939'
-    xtrn = 'Las-Vegas-Railway-Express-XTRN-16650'
-    dolv = 'Dolat-Ventures-Inc-DOLV-16401'
-    pgpm = 'Pilgrim-Petroleum-Corp-PGPM-5655'
-    cnxs = 'Connexus-Corp-CNXS-17863'
-    amlh = 'American-Leisure-Holdings-Inc-AMLH-29447'
-    exol = 'EXOlifestyle-Inc-EXOL-11015'
-    coho = 'Crednology-Holding-Corp-COHO-4899'
-    uoip = 'UnifiedOnline-Inc-UOIP-5196'
     kget = 'CaliPharms-Inc-KGET-10313'
+    cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
+    data = IhubData(cbyi,verbose = 1)
+    data.pull_posts()
 
 
 
-    stock_lst = [cbyi,
-        mine,
-        xtrn,
-        dolv,
-        pgpm,
-        cnxs,
-        amlh,
-        exol,
-        coho,
-        uoip,
-        kget]
+    # cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
+    # mine = 'Minerco-Inc-MINE-17939'
+    # xtrn = 'Las-Vegas-Railway-Express-XTRN-16650'
+    # dolv = 'Dolat-Ventures-Inc-DOLV-16401'
+    # pgpm = 'Pilgrim-Petroleum-Corp-PGPM-5655'
+    # cnxs = 'Connexus-Corp-CNXS-17863'
+    # amlh = 'American-Leisure-Holdings-Inc-AMLH-29447'
+    # exol = 'EXOlifestyle-Inc-EXOL-11015'
+    # coho = 'Crednology-Holding-Corp-COHO-4899'
+    # uoip = 'UnifiedOnline-Inc-UOIP-5196'
+    # kget = 'CaliPharms-Inc-KGET-10313'
 
-    for stock in stock_lst:
-        data = IhubData(stock,verbose = 1)
-        data.pull_posts()
-
-    # data = StockData(cbyi,verbose = 1)
-    # data.pull_posts()
+    # stock_lst = [cbyi,
+    #     mine,
+    #     xtrn,
+    #     dolv,
+    #     pgpm,
+    #     cnxs,
+    #     amlh,
+    #     exol,
+    #     coho,
+    #     uoip,
+    #     kget]
+    #
+    # for stock in stock_lst:
+    #     data = IhubData(stock,verbose = 1)
+    #     data.pull_posts()

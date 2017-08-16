@@ -10,7 +10,7 @@ class PlotData(object):
         self.ticker_symbol = ticker_symbol
         self.start_date = start_date
         self.end_date = end_date
-        self.data = (pd.read_csv('data/data/'+self.ticker_symbol+'.csv'))
+        self.data = pd.read_csv('data/data/'+self.ticker_symbol+'.csv')
 
     # def _ihub(self, df):
     #     df = pd.read_csv('data/ihub/'+self.stock_identifier+'.csv').groupby('date').count().post_number
@@ -47,11 +47,16 @@ class PlotData(object):
         # x = pd.to_datetime(self.data.date).dt.to_pydatetime()
         x = self.data.index
 
-        plt.style.use('ggplot')
+        plt.style.use('seaborn')
         plt.bar(x,self.data.post_number,label = 'ihub posts',alpha = 0.5)
         plt.bar(x,self.data.dollar_volume,label = 'volume',alpha = 0.5)
         plt.plot(x,self.data.ohlc,'r', label = 'stock price')
         # plt.plot(x,self.data.dollar_volume,'k', label = 'volume')
+
+        buy_x = self.data.index[self.data.target == 1]
+        buy_y = self.data.ohlc[self.data.target == 1]
+        plt.scatter(buy_x,buy_y, s=100)
+
 
         x_min_index = 0
         x_max_index = 100
@@ -115,9 +120,9 @@ class PlotData(object):
 
 if __name__ == '__main__':
     plt.close('all')
-    start_date = '20140101'
-    end_date = '20150101'
-    ticker_symbol = 'mine'
+    start_date = '20130801'
+    end_date = '20140201'
+    ticker_symbol = 'cbyi'
 
     stock = PlotData(ticker_symbol,start_date,end_date)
     df = stock.data

@@ -1,6 +1,6 @@
-from src.data_management.ihub_data import IhubData
-from src.data_management.stock_data import StockData
-from src.data_management.combine_data import CombineData
+from src.raw_data.ihub_data import IhubData
+from src.raw_data.stock_data import StockData
+from src.create_training_data.combine_data import CombineData
 
 
 if __name__ == '__main__':
