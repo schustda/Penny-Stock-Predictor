@@ -1,34 +1,20 @@
-from src.raw_data.ihub_data import IhubData
-from src.raw_data.stock_data import StockData
-from src.create_training_data.combine_data import CombineData
-
+from src.data.ihub_data import IhubData
+from src.data.stock_data import StockData
+from src.data.combine_data import CombineData
+import pandas as pd
+import time
 
 if __name__ == '__main__':
-    stock_lst = ['cbyi','mine','xtrn','dolv','pgpm','cnxs','amlh','exol','coho',
-        'uoip','kget']
 
-    cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
-    mine = 'Minerco-Inc-MINE-17939'
-    xtrn = 'Las-Vegas-Railway-Express-XTRN-16650'
-    dolv = 'Dolat-Ventures-Inc-DOLV-16401'
-    pgpm = 'Pilgrim-Petroleum-Corp-PGPM-5655'
-    cnxs = 'Connexus-Corp-CNXS-17863'
-    amlh = 'American-Leisure-Holdings-Inc-AMLH-29447'
-    exol = 'EXOlifestyle-Inc-EXOL-11015'
-    coho = 'Crednology-Holding-Corp-COHO-4899'
-    uoip = 'UnifiedOnline-Inc-UOIP-5196'
-    kget = 'CaliPharms-Inc-KGET-10313'
+    while True:
+        df = pd.read_json('data/stock_list.json')
+        for symbol in df.columns.tolist():
+            data = IhubData(df[symbol]['url'],verbose = 1)
+            data.pull_posts()
+            s = StockData(symbol)
+            s.add_stock_data()
+            combined_data = CombineData(symbol)
+            combined_data.compile_data()
 
-    ihub_lst = [cbyi,mine,xtrn,dolv,pgpm,cnxs,amlh,exol,coho,uoip,kget]
-
-    for stock in ihub_lst:
-        data = IhubData(stock,verbose = 1)
-        data.pull_posts()
-
-    print ('getting pricing data...')
-
-    for stock in stock_lst:
-        s = StockData(stock)
-        s.add_stock_data()
-        combined_data = CombineData(stock)
-        combined_data.compile_data()
+        #update four times a day
+        time.sleep(60*60*24 /4)
