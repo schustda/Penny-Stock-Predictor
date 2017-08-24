@@ -74,33 +74,22 @@ class IhubData(object):
             posts_per_page = 51-self.num_pinned
             pinned = self.num_pinned
 
-            
-        content = requests.get(URL).content
-        soup = BeautifulSoup(content, "lxml")
-        rows = list(soup.find('table', id="ctl00_CP1_gv"))
-        table_lst = []
-        for row in rows[(2+pinned):-2]:
-            cell_lst = [cell for cell in list(row)[1:5]]
-            table_lst.append(cell_lst)
-        df = pd.DataFrame(table_lst)
-        return self._clean_dataframe(df,sort), error_list
+        try:
+            content = requests.get(URL).content
+            soup = BeautifulSoup(content, "lxml")
+            rows = list(soup.find('table', id="ctl00_CP1_gv"))
+            table_lst = []
+            for row in rows[(2+pinned):-2]:
+                cell_lst = [cell for cell in list(row)[1:5]]
+                table_lst.append(cell_lst)
+            df = pd.DataFrame(table_lst)
+            return self._clean_dataframe(df,sort), error_list
 
-        # try:
-        #     content = requests.get(URL).content
-        #     soup = BeautifulSoup(content, "lxml")
-        #     rows = list(soup.find('table', id="ctl00_CP1_gv"))
-        #     table_lst = []
-        #     for row in rows[(2+pinned):-2]:
-        #         cell_lst = [cell for cell in list(row)[1:5]]
-        #         table_lst.append(cell_lst)
-        #     df = pd.DataFrame(table_lst)
-        #     return self._clean_dataframe(df,sort), error_list
-        #
-        # except:
-        #     pass
-        #     print ('ERROR ON PAGE: ' + str(post_number))
-        #     error_list.append(post_number)
-        #     return pd.DataFrame(), error_list
+        except:
+            pass
+            print ('ERROR ON PAGE: ' + str(post_number))
+            error_list.append(post_number)
+            return pd.DataFrame(), error_list
 
     def _verbose(self, percent, original_time, time_elapsed):
         a = int(percent/2)

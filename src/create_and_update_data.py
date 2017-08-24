@@ -20,4 +20,4 @@ if __name__ == '__main__':
             combined_data.compile_data()
 
         #update four times a day
-        time.sleep(60*60*24 /4)
+        # time.sleep(60*60*24 /4)
