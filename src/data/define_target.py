@@ -30,7 +30,7 @@ class DefineTarget(object):
 
     def add_target(self):
         target = []
-        print('defining target...')
+        print('generating target...')
         for i in range(self.data.shape[0]-11):
             ohlc = self.data.iloc[i].ohlc
             wk_avg1 = self.data.iloc[i+1:i+6].ohlc.mean()

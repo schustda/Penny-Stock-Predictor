@@ -1,5 +1,13 @@
 # Penny-Stock-Predictor
 
+Tasks:
+* Refine the target and make sure there are no outliers - COMPLETE
+* Begin running top_board / breakout_boards updater
+* Add top boards within the compiler - not till a later date...
+* Create log for AWS instance to update
+
+
+
 
 Questions:
 Q: How do I treat weekends and market holidays?

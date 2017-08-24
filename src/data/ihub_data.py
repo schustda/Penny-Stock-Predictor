@@ -1,8 +1,8 @@
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
-from time import time
 import pathlib
+from bs4 import BeautifulSoup
+from time import time, sleep
 
 
 class IhubData(object):
@@ -87,13 +87,15 @@ class IhubData(object):
 
         except:
             pass
-            print ('ERROR ON PAGE' + post_number)
-            error_list.append()
+            print ('ERROR ON PAGE: ' + str(post_number))
+            error_list.append(post_number)
             return pd.DataFrame(), error_list
 
     def _verbose(self, percent, original_time, time_elapsed):
         a = int(percent/2)
         b = 50-a
+        if percent == 0:
+            percent = 0.5
         min_remaining = int(time_elapsed/percent*(100-percent)/60)
         print ('|'+ a*'=' + b*'-' + '| ' + str(percent) + '% - ' + str(min_remaining) + ' minute(s) remaining')
 
@@ -167,13 +169,11 @@ class IhubData(object):
         df.index.name = 'post_number'
         df.drop_duplicates(inplace = True)
 
-        print (self.ticker_symbol + ' complete!')
-
         # display whether or not the file was created or updated
         if not path.is_file():
-            print (str(self.num_posts) + ' posts created \n')
+            print ('complete, ' + str(self.num_posts) + ' posts created')
         else:
-            print (str(missing_posts) + ' post(s) added \n')
+            print ('complete, ' + str(missing_posts) + ' post(s) added')
 
         if len(final_error_list) != 0:
             print('Errors encountered on the following pages:' + final_error_list)

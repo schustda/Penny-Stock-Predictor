@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime
 from math import isnan
 from src.data.define_target import DefineTarget
 
@@ -40,39 +41,39 @@ class CombineData(object):
         self.ihub_posts.date.fillna(method = 'ffill',inplace = True)
         self.ihub_posts.subject.fillna('None',inplace = True)
 
-    def _calculate_ohlc(self):
+    def _calculate_ohlc(self,df):
 
         #fillna's
-        self.stock_info.fillna(0.00,inplace = True)
+        df.fillna(0.00,inplace = True)
 
         #create ohlc column
-        self.stock_info['ohlc'] = (self.stock_info['Open']+self.stock_info['High']+self.stock_info['Low']+self.stock_info['Close'])/4
+        df['ohlc'] = (df['Open']+df['High']+df['Low']+df['Close'])/4
 
         #create dollar volumne column
-        self.stock_info['dollar_volume'] = self.stock_info['ohlc'] * self.stock_info['Volume']
+        df['dollar_volume'] = df['ohlc'] * df['Volume']
 
         #convert to date
-        self.stock_info = self.stock_info[0:-19]
-        self.stock_info.Date = self.stock_info.Date.map(lambda x: x[0:10])
+        df = df[0:-19]
+        df.Date = df.Date.map(lambda x: x[0:10])
 
         #drop columns
-        self.stock_info.index = self.stock_info.Date
-        self.stock_info.drop(['Open','Close','High','Low','Date','Volume'],axis=1,inplace=True)
+        df.index = df.Date
+        df.drop(['Open','Close','High','Low','Date','Volume'],axis=1,inplace=True,errors='ignore')
 
-        self.stock_info.index = pd.to_datetime(self.stock_info.index)
+        df.index = pd.to_datetime(df.index)
+        if df.index[-1] < pd.Timestamp(datetime.date.today()):
+            index = pd.DatetimeIndex(start = df.index[-1]+datetime.timedelta(days=1), end = datetime.date.today(),freq = 'd')
+            dft = pd.DataFrame(data = 0, index = index, columns = df.columns)
+            df = pd.concat([df,dft])
+        self.stock_info = df
 
     def fill_nulls(self, df):
-
         df.post_number.fillna(0,inplace = True)
-
-
         weekends = set([5,6])
-
         for day in df.index:
             if all([isnan(df.loc[day]['ohlc']),df.loc[day]['weekday'] not in weekends, day not in holiday_set]):
                 df = df.set_value(day,'ohlc',0)
                 df = df.set_value(day,'dollar_volume',0)
-
         return df
 
     def _remove_weekends_and_holidays(self, df):
@@ -84,7 +85,7 @@ class CombineData(object):
         print ('compiling data for '+self.ticker_symbol+'...')
 
         self._add_deleted_fill_na()
-        self._calculate_ohlc()
+        self._calculate_ohlc(self.stock_info)
         self.ihub_posts = self.ihub_posts.groupby('date').count().post_number
         self.ihub_posts.index = pd.to_datetime(self.ihub_posts.index)
 
