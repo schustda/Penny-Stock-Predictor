@@ -7,11 +7,11 @@ from time import time, sleep
 
 class IhubData(object):
 
-    def __init__(self,stock_identifier, verbose = 0):
-        self.stock_identifier = stock_identifier
+    def __init__(self, symbol, url, verbose = 0):
+        self.symbol = symbol
+        self.url = url
         self.num_pinned, self.num_posts = self._total_and_num_pinned()
         self.verbose = verbose
-        self.ticker_symbol = self.stock_identifier.split('-')[-2].lower()
 
     def _total_and_num_pinned(self):
         '''
@@ -26,7 +26,7 @@ class IhubData(object):
         num_posts: int, shows, to-date, how many messages have been posted on
             the specific board
         '''
-        df, _ = self._get_page(self.stock_identifier,most_recent=True,sort = False)
+        df, _ = self._get_page(self.url,most_recent=True,sort = False)
         post_nums = df.index.tolist()
         for i in range(len(post_nums)):
             if post_nums[i] == post_nums[i+1]+1:
@@ -68,28 +68,39 @@ class IhubData(object):
         df: pandas dataframe, pulled from the webpage, parsed, and cleaned
         '''
         pinned = 0
-        URL = "https://investorshub.advfn.com/"+self.stock_identifier
+        URL = "https://investorshub.advfn.com/"+self.url
         if not most_recent:
             URL += "/?NextStart="+str(post_number)
             posts_per_page = 51-self.num_pinned
             pinned = self.num_pinned
 
-        try:
-            content = requests.get(URL).content
-            soup = BeautifulSoup(content, "lxml")
-            rows = list(soup.find('table', id="ctl00_CP1_gv"))
-            table_lst = []
-            for row in rows[(2+pinned):-2]:
-                cell_lst = [cell for cell in list(row)[1:5]]
-                table_lst.append(cell_lst)
-            df = pd.DataFrame(table_lst)
-            return self._clean_dataframe(df,sort), error_list
+            
+        content = requests.get(URL).content
+        soup = BeautifulSoup(content, "lxml")
+        rows = list(soup.find('table', id="ctl00_CP1_gv"))
+        table_lst = []
+        for row in rows[(2+pinned):-2]:
+            cell_lst = [cell for cell in list(row)[1:5]]
+            table_lst.append(cell_lst)
+        df = pd.DataFrame(table_lst)
+        return self._clean_dataframe(df,sort), error_list
 
-        except:
-            pass
-            print ('ERROR ON PAGE: ' + str(post_number))
-            error_list.append(post_number)
-            return pd.DataFrame(), error_list
+        # try:
+        #     content = requests.get(URL).content
+        #     soup = BeautifulSoup(content, "lxml")
+        #     rows = list(soup.find('table', id="ctl00_CP1_gv"))
+        #     table_lst = []
+        #     for row in rows[(2+pinned):-2]:
+        #         cell_lst = [cell for cell in list(row)[1:5]]
+        #         table_lst.append(cell_lst)
+        #     df = pd.DataFrame(table_lst)
+        #     return self._clean_dataframe(df,sort), error_list
+        #
+        # except:
+        #     pass
+        #     print ('ERROR ON PAGE: ' + str(post_number))
+        #     error_list.append(post_number)
+        #     return pd.DataFrame(), error_list
 
     def _verbose(self, percent, original_time, time_elapsed):
         a = int(percent/2)
@@ -110,12 +121,12 @@ class IhubData(object):
 
         # Determines whether or not the file has already been created
         # (need to create or update??)
-        path = pathlib.Path('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
+        path = pathlib.Path('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
 
         if not path.is_file():
 
             # if this is the first time this ticker symbol has been run
-            print('pulling posts for ' + self.ticker_symbol)
+            print('pulling posts for ' + self.symbol)
             df, error_list = self._get_page(posts_per_page)
             start_page = posts_per_page * 2
             end_page = self.num_posts
@@ -123,8 +134,8 @@ class IhubData(object):
         else:
             # if the file has already been created, import it to update and
             # transform it back to native format
-            print('updating posts for ' + self.ticker_symbol)
-            df = pd.read_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
+            print('updating posts for ' + self.symbol)
+            df = pd.read_csv('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
             df['date'] = pd.to_datetime(df['date']).dt.date
 
             start_page = df.post_number.max()+posts_per_page-1
@@ -178,7 +189,7 @@ class IhubData(object):
         if len(final_error_list) != 0:
             print('Errors encountered on the following pages:' + final_error_list)
 
-        df.to_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
+        df.to_csv('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
 
 if __name__ == '__main__':
 
