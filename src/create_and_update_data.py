@@ -19,7 +19,7 @@ if __name__ == '__main__':
             combined_data = CombineData(symbol)
             combined_data.compile_data()
 
-        rc = subprocess.call('src/scripts/update_data.sh',shell=True)
+            rc = subprocess.call('src/scripts/update_data.sh',shell=True)
 
             #update six times a day
         time.sleep(60*60*24/6)
