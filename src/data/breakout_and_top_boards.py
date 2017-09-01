@@ -64,7 +64,8 @@ class TopAndBreakoutBoards(object):
             rc = subprocess.call('src/scripts/breakout_and_top_boards.sh',shell=True)
 
             print ('got pages for '+pd.Timestamp("today").strftime("%m-%d-%Y"), '\n')
-            time.sleep(60*60*24)
+
+            time.sleep((60*60*24) - 60)
 
 
 if __name__ == '__main__':
