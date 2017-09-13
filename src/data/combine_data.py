@@ -3,45 +3,35 @@ import numpy as np
 import datetime
 from math import isnan
 from src.data.define_target import DefineTarget
+import pathlib
+
 
 class CombineData(object):
 
-    def __init__(self,ticker_symbol):
-        self.ticker_symbol = ticker_symbol
-        self.ihub_posts = pd.read_csv('data/raw_data/ihub/message_boards/'+self.ticker_symbol+'.csv')
-        self.stock_info = pd.read_csv('data/raw_data/stock/'+self.ticker_symbol+'.csv',index_col=0)
+    def __init__(self,symbol):
+        self.symbol = symbol
+        self.ihub_posts = pd.read_csv('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
+        self.stock_info = pd.read_csv('data/raw_data/stock/'+self.symbol+'.csv',index_col=0)[0:-19]
+        # self.existing = pathlib.Path('data/data/'+self.symbol+'.csv').is_file()
+        # if self.existing:
+        #     self.data = pd.read_csv('data/data/'+self.symbol+'.csv')
 
-    def _add_deleted_fill_na(self):
+    def _calculate_ohlc(self,df):
         '''
         Parameters
         ----------
-        None
+        df: pandas dataframe, stock price info
 
         Output
         ------
-        ihub_posts: pandas dataframe, original data with deleted posts added in
+        df: pandas dataframe, ohlc and dollar volume of stock
+
+        OHLC Average (open-high-low-close) is a commonly used indicator to
+            determine a stock price on a given day
+        Dollar Volume is a better predictor than volume alone. i.e. a stock trading
+            1M volume at a $0.10 price should be treated differently than a stock
+            trading 1M volume at a $10 price
         '''
-
-        #get missing post numbers
-        deleted_post_set = set(range(1,self.ihub_posts.post_number.max())).difference(set(self.ihub_posts.post_number))
-
-        #create df with deleted posts
-        df_deleted = pd.DataFrame(np.nan, index=range(len(deleted_post_set)), columns=self.ihub_posts.columns.tolist())
-        df_deleted.post_number = deleted_post_set
-        df_deleted.subject = '<DELETED>'
-        df_deleted.username = '<DELETED>'
-
-        #add to original dataframe
-        self.ihub_posts = pd.concat([self.ihub_posts,df_deleted])
-
-        #sort df
-        self.ihub_posts.sort_values(['post_number'],axis=0,inplace=True)
-
-        #fillna
-        self.ihub_posts.date.fillna(method = 'ffill',inplace = True)
-        self.ihub_posts.subject.fillna('None',inplace = True)
-
-    def _calculate_ohlc(self,df):
 
         #fillna's
         df.fillna(0.00,inplace = True)
@@ -51,49 +41,32 @@ class CombineData(object):
 
         #create dollar volumne column
         df['dollar_volume'] = df['ohlc'] * df['Volume']
-
-        #convert to date
-        df = df[0:-19]
-        df.Date = df.Date.map(lambda x: x[0:10])
-
-        #drop columns
-        df.index = df.Date
         df.drop(['Open','Close','High','Low','Date','Volume'],axis=1,inplace=True,errors='ignore')
-
         df.index = pd.to_datetime(df.index)
-        if df.index[-1] < pd.Timestamp(datetime.date.today()):
-            index = pd.DatetimeIndex(start = df.index[-1]+datetime.timedelta(days=1), end = datetime.date.today(),freq = 'd')
-            dft = pd.DataFrame(data = 0, index = index, columns = df.columns)
-            df = pd.concat([df,dft])
         self.stock_info = df
 
-    def fill_nulls(self, df):
-        df.post_number.fillna(0,inplace = True)
-        weekends = set([5,6])
-        for day in df.index:
-            if all([isnan(df.loc[day]['ohlc']),df.loc[day]['weekday'] not in weekends, day not in holiday_set]):
-                df = df.set_value(day,'ohlc',0)
-                df = df.set_value(day,'dollar_volume',0)
-        return df
-
     def _remove_weekends_and_holidays(self, df):
-        weekends = set(df[df.weekday > 4].index)
-        holidays = set(pd.to_datetime(pd.read_csv('data/stock_market_holidays.csv').date))
-        return df.drop(holidays.union(weekends),errors='ignore')
+        '''
+        The stock market is not open on weekends and federal holidays. These
+            days will not be included
+        '''
+        weekend_dates = set(df[df.weekday > 4].index)
+        holiday_dates = set(pd.to_datetime(pd.read_csv('data/stock_market_holidays.csv').date))
+        return df.drop(holiday_dates.union(weekend_dates),errors='ignore')
 
     def compile_data(self):
-        print ('compiling data for '+self.ticker_symbol+'...')
 
-        self._add_deleted_fill_na()
+        print ('compiling data for '+self.symbol+'...')
+
         self._calculate_ohlc(self.stock_info)
-        self.ihub_posts = self.ihub_posts.groupby('date').count().post_number
-        self.ihub_posts.index = pd.to_datetime(self.ihub_posts.index)
+        grouped_posts = self.ihub_posts.groupby('date').count().post_number
+        grouped_posts.index = pd.to_datetime(grouped_posts.index)
 
-        start_date = max([min(self.ihub_posts.index.tolist()),min(self.stock_info.index.tolist())])
-        end_date = min([max(self.ihub_posts.index.tolist()),max(self.stock_info.index.tolist())])
+        start_date = max([min(grouped_posts.index.tolist()),min(self.stock_info.index.tolist())])
+        end_date = min([max(grouped_posts.index.tolist()),max(self.stock_info.index.tolist())])
         self.df_date = pd.DataFrame(pd.date_range(start_date,end_date)).set_index(0)
 
-        self.combined_data = self.df_date.join(self.ihub_posts).join(self.stock_info)
+        self.combined_data = self.df_date.join(grouped_posts).join(self.stock_info)
         self.combined_data['weekday'] = self.combined_data.index.weekday
         self.combined_data = self._remove_weekends_and_holidays(self.combined_data)
         self.combined_data.index.name = 'date'
@@ -101,8 +74,7 @@ class CombineData(object):
 
         t = DefineTarget(self.combined_data)
         self.combined_data['target'] = t.target
-
-        self.combined_data.to_csv('data/data/'+self.ticker_symbol+'.csv')
+        self.combined_data.to_csv('data/data/'+self.symbol+'.csv')
 
         print ('Complete! \n')
 

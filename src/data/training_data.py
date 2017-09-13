@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from random import randint
 from sklearn.preprocessing import normalize
+from sklearn.model_selection import train_test_split
+
 
 
 def get_points(data,num_points,num_days):
@@ -49,7 +51,7 @@ if __name__ == '__main__':
 # FEATURES
 
     # X number of days before prediction
-    num_days = 50
+    num_days = 100
 
     #MESSAGE BOARD POSTS
         # Normalize weekly data
@@ -75,9 +77,11 @@ if __name__ == '__main__':
         points = get_points(data,num_points,num_days)
         for point in points:
             if first:
-                training_data = get_data_point(point,num_days,data)
+                full_dataset = get_data_point(point,num_days,data)
                 first=False
             else:
-                training_data = np.vstack([training_data,get_data_point(point,num_days,data)])
+                full_dataset = np.vstack([full_dataset,get_data_point(point,num_days,data)])
 
-    np.savetxt('data/train.csv',training_data,delimiter=",")
+    train, test = train_test_split(full_dataset)
+    np.savetxt('data/model/train.csv',train,delimiter=",")
+    np.savetxt('data/model/test.csv',test,delimiter=",")
