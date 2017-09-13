@@ -7,6 +7,18 @@ import time
 
 if __name__ == '__main__':
 
+
+    # df = pd.read_json('data/stock_list.json')
+    # # updates (in order) message board posts, stock price, compiled data
+    # for symbol in df.columns.tolist():
+    #     data = IhubData(df[symbol]['symbol'],df[symbol]['url'],verbose = 1)
+    #     data.pull_posts()
+    #     s = StockData(symbol)
+    #     s.add_stock_data()
+    #     combined_data = CombineData(symbol)
+    #     combined_data.compile_data()
+
+
     while True:
         df = pd.read_json('data/stock_list.json')
 
@@ -19,7 +31,7 @@ if __name__ == '__main__':
             combined_data = CombineData(symbol)
             combined_data.compile_data()
 
-            rc = subprocess.call('src/scripts/update_data.sh',shell=True)
+        rc = subprocess.call('src/scripts/update_data.sh',shell=True)
 
             #update six times a day
         time.sleep(60*60*24/6)
