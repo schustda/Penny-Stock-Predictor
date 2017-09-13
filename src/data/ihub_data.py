@@ -206,7 +206,7 @@ class IhubData(object):
 
         # retry pages that previously returned an error
         final_error_list = []
-        shallow_error_list = error_list.copy()
+        shallow_error_list = list(error_list)
         for post_num in shallow_error_list:
             page_df, final_error_list = self._get_page(post_num, error_list = final_error_list)
             df = pd.concat([df,page_df])
