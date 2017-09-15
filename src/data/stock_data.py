@@ -10,24 +10,33 @@ class StockData(object):
         '''
         Parameters
         ----------
-        df: pandas dataframe, full message board data
+        df: pandas dataframe, raw stock price history
 
         Output
         ------
-        df: pandas dataframe, original data with deleted posts added in
+        df: pandas dataframe, original data with 0 volume days added in
 
-        Moderators of a message board forum may remove a post if it violates
-        the ihub policy. While the content of these posts is unknown the actual
-        post is important when suming the posts per a given day.
+        Some tickers will experience no volume in a given day. When importing,
+        these days are not included at all. This function adds in the missing
+        days with zero volume.
         '''
 
-        # df = pd.read_csv('../data/raw_data/stock/cbyi.csv',index_col='Date').iloc[:-18]
+        # Convert index to datetime
         df.index = pd.to_datetime(df.index)
 
+        # Start is the first day that stock price is recorded
         start = df.index[0]
-        # end = min([pd.Timestamp(dt.date.today()),df.index[-1]])
-        end = pd.Timestamp(dt.date.today())
+
+        # If market is closed, last stock day is current day. Otherwise
+        # it is previous day
+        end = min([pd.Timestamp(dt.date.today()-dt.timedelta(1)),df.index[-1]])
+
+        # Create datetime index with all business days (no weekends).
+        # Holidays are not excluded, but are removed in CombineData
         all_days = pd.DatetimeIndex(start = start, end = end, freq = 'B')
+
+        # Reset the index with the full set, and fill nulls (days that are
+        # empty are days with 0 stock volume)
         df = df.reindex(all_days)
         df.index.name = 'Date'
         df.fillna({'Volume': 0},inplace=True)
@@ -42,22 +51,6 @@ class StockData(object):
 
 
 if __name__ == '__main__':
-
-    # stock_lst = ['cbyi',
-    #     'mine',
-    #     'xtrn',
-    #     'dolv',
-    #     'pgpm',
-    #     'cnxs',
-    #     'amlh',
-    #     'exol',
-    #     'coho',
-    #     'uoip',
-    #     'kget']
-    #
-    # for stock in stock_lst:
-    #     data = StockData(stock)
-    #     data.add_stock_data()
 
     cbyi = StockData('aagc')
     cbyi.add_stock_data()

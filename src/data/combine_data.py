@@ -11,7 +11,7 @@ class CombineData(object):
     def __init__(self,symbol):
         self.symbol = symbol
         self.ihub_posts = pd.read_csv('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
-        self.stock_info = pd.read_csv('data/raw_data/stock/'+self.symbol+'.csv',index_col=0)[0:-19]
+        self.stock_info = pd.read_csv('data/raw_data/stock/'+self.symbol+'.csv',index_col=0)
         # self.existing = pathlib.Path('data/data/'+self.symbol+'.csv').is_file()
         # if self.existing:
         #     self.data = pd.read_csv('data/data/'+self.symbol+'.csv')
@@ -79,7 +79,7 @@ class CombineData(object):
         print ('Complete! \n')
 
 if __name__ == '__main__':
-    cbyi = CombineData('cbyi')
+    cbyi = CombineData('aagc')
     cbyi.compile_data()
     df1 = cbyi.stock_info
     df2 = cbyi.ihub_posts
