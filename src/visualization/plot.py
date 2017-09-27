@@ -55,7 +55,7 @@ class PlotData(object):
 
         buy_x = self.data.index[self.data.target == 1]
         buy_y = self.data.ohlc[self.data.target == 1]
-        plt.scatter(buy_x,buy_y, s=100)
+        plt.scatter(buy_x,buy_y, s=100,label = 'buy/sell')
 
 
         x_min_index = 0
@@ -120,8 +120,15 @@ class PlotData(object):
 
 if __name__ == '__main__':
     plt.close('all')
-    start_date = '20130701'
-    end_date = '20131101'
+    start_year = '2011'
+    start_month = '02'
+    start_day = '01'
+
+    end_year = '2011'
+    end_month = '05'
+    end_day = '01'
+    start_date = (start_year+start_month+start_day)
+    end_date = (end_year+end_month+end_day)
     ticker_symbol = 'cbyi'
 
     stock = PlotData(ticker_symbol,start_date,end_date)

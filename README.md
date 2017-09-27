@@ -1,16 +1,33 @@
 # Penny-Stock-Predictor
 
+FINAL MODEL SCORE ON HOLDOUT SET (XGBoost)
+* AUC: 0.89
+* Recall: 0.74
+* Precision: 0.66
+
+
+
 Tasks:
 * Refine the target and make sure there are no outliers - COMPLETE
-* Begin running top_board / breakout_boards updater
+* Begin running top_board / breakout_boards updater - COMPLETE
+* Re-visit target definition
 * Add top boards within the compiler - not till a later date...
 * Create log for AWS instance to update
+*
 
 
 
 
 Questions:
+
+Q: How do I choosed which points to select for the training data?
+
+A: Have three options remaining. Choose all points, or have a percentage
+of possible points
+
+
 Q: How do I treat weekends and market holidays?
+
 A: Remove them. The message boards are much less active on those days.
 
 
@@ -27,9 +44,10 @@ Predict a massive change in stock price for a given small cap stock
 
 ### MODEL
 * Feature Space:
-    * 52-week prior stock volume
-    * 52-week prior iHub message frequency
-    * Others (promotional emails, iHub’s “top boards”)
+    * prior stock volume
+    * prior iHub message frequency
+    * iHub 'Most Read'
+    * iHub 'Breakout Boards'
 * Target:
     * ‘buy’ (1) : a significant stock price change is upcoming
     * ‘no buy’ (0): no significant stock price change is upcoming
@@ -83,3 +101,8 @@ Predict a massive change in stock price for a given small cap stock
         -- tbd
 
 ```
+
+
+Sources:
+
+http://www.marcoaltini.com/blog/dealing-with-imbalanced-data-undersampling-oversampling-and-proper-cross-validation

@@ -1,0 +1,9 @@
+dschuster@dschuster ~ $ cat update.txt
+
+Stocks to buy today!
+
+Dear ${PERSON_NAME},
+
+This is a test message.
+Have a great weekend!
+Yours Truly

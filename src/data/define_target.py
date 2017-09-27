@@ -35,11 +35,15 @@ class DefineTarget(object):
             ohlc = self.data.iloc[i].ohlc
             wk_avg1 = self.data.iloc[i+1:i+6].ohlc.mean()
             wk_avg2 = self.data.iloc[i+1:i+11].ohlc.mean()
+            wk_avg_vol = self.data.iloc[i-1:i+11].dollar_volume.mean()
 
             a1 = wk_avg1 > ohlc * 2
             a2 = wk_avg2 > ohlc * 1.5
             a3 = ohlc != 0.0
-            buy = all([a1,a2,a3])
+            a4 = wk_avg2 > 0.00015
+            a5 = i > 60
+            a6 = wk_avg_vol > 500
+            buy = all([a1,a2,a3,a4,a5,a6])
 
             if buy :
                 target.append(1)

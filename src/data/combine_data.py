@@ -63,7 +63,7 @@ class CombineData(object):
         grouped_posts.index = pd.to_datetime(grouped_posts.index)
 
         start_date = max([min(grouped_posts.index.tolist()),min(self.stock_info.index.tolist())])
-        end_date = min([max(grouped_posts.index.tolist()),max(self.stock_info.index.tolist())])
+        end_date = max([max(grouped_posts.index.tolist()),max(self.stock_info.index.tolist())])
         self.df_date = pd.DataFrame(pd.date_range(start_date,end_date)).set_index(0)
 
         self.combined_data = self.df_date.join(grouped_posts).join(self.stock_info)
@@ -74,12 +74,13 @@ class CombineData(object):
 
         t = DefineTarget(self.combined_data)
         self.combined_data['target'] = t.target
-        self.combined_data.to_csv('data/data/'+self.symbol+'.csv')
+        self.combined_data['symbol'] = self.symbol
+        self.combined_data.to_csv('data/data/{0}.csv'.format(self.symbol))
 
         print ('Complete! \n')
 
 if __name__ == '__main__':
-    cbyi = CombineData('aagc')
+    cbyi = CombineData('cbyi')
     cbyi.compile_data()
     df1 = cbyi.stock_info
     df2 = cbyi.ihub_posts

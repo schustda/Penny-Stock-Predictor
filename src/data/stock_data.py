@@ -29,7 +29,7 @@ class StockData(object):
 
         # If market is closed, last stock day is current day. Otherwise
         # it is previous day
-        end = min([pd.Timestamp(dt.date.today()-dt.timedelta(1)),df.index[-1]])
+        end = max([pd.Timestamp(dt.date.today()-dt.timedelta(1)),df.index[-1]])
 
         # Create datetime index with all business days (no weekends).
         # Holidays are not excluded, but are removed in CombineData
