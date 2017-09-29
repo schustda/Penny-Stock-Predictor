@@ -67,9 +67,9 @@ if __name__ == '__main__':
     threshold = 0.2
 
     while True:
-        # t = time()
-        # rc = subprocess.call('src/scripts/git_pull.sh',shell=True)
+        t = time()
+        rc = subprocess.call('src/scripts/git_pull.sh',shell=True)
         p  = Predict(num_days = num_days,days_avg=days_avg,threshold=threshold,
                 email_address = argv[1], password = argv[2])
         buy = p.prediction()
-        # time.sleep(60*60*24-(time()-t))
+        time.sleep(60*60*24-(time()-t))

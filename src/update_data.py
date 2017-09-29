@@ -37,7 +37,7 @@ if __name__ == '__main__':
                 all_data = pd.concat([all_data,cd.combined_data])
         all_data.dropna(inplace=True)
         all_data.to_csv('data/data/_all.csv')
-        # rc = subprocess.call('src/scripts/update_data.sh',shell=True)
+        rc = subprocess.call('src/scripts/update_data.sh',shell=True)
 
-            #update six times a day
-        # time.sleep(60*60*24/6)
+        # update six times a day
+        time.sleep(60*60*24/6)
