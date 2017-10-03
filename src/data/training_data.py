@@ -85,7 +85,6 @@ class TrainingData(object):
 
     def _get_data_point(self,index,data):
         data_point = np.empty(self.feature_length)
-        print (data_point.shape)
         #Posts
         posts = data.post_number.values[index-self.num_days:index]
         post_averages = np.mean(posts.reshape(-1, self.days_avg), axis=1).reshape(1,-1)

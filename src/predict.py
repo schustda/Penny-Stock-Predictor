@@ -8,7 +8,7 @@ from sys import argv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import subprocess
-
+from time import time,sleep
 
 class Predict(TrainingData):
 
@@ -72,4 +72,4 @@ if __name__ == '__main__':
         p  = Predict(num_days = num_days,days_avg=days_avg,threshold=threshold,
                 email_address = argv[1], password = argv[2])
         buy = p.prediction()
-        time.sleep(60*60*24-(time()-t))
+        sleep(60*60*24-(time()-t))
