@@ -19,7 +19,7 @@ if __name__ == '__main__':
     #     combined_data.compile_data()
 
 
-    # while True:
+    while True:
         df = pd.read_json('data/stock_list.json')
         first = True
         # updates (in order) message board posts, stock price, compiled data
