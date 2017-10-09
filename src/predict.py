@@ -39,10 +39,12 @@ class Predict(TrainingData):
                 if train_pred == 1:
                     buy.append(stock)
                 print(stock, bool(train_pred))
-        if len(buy) > 0:
-            self._email_results
 
-    def email_results(self,stock_lst):
+        buy = ['asdf','fdsa']
+        if len(buy) > 0:
+            self._email_results(buy)
+
+    def _email_results(self,stock_lst):
         fromaddr = self.email_address
         toaddr = self.email_address
         msg = MIMEMultipart()
