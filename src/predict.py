@@ -40,7 +40,6 @@ class Predict(TrainingData):
                     buy.append(stock)
                 print(stock, bool(train_pred))
 
-        buy = ['asdf','fdsa']
         if len(buy) > 0:
             self._email_results(buy)
 
@@ -67,6 +66,7 @@ if __name__ == '__main__':
     num_days = 1200
     days_avg = 12
     threshold = 0.2
+
 
     while True:
         t = time()
