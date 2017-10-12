@@ -89,9 +89,8 @@ class IhubData(object):
             df = pd.DataFrame(table_lst)
             return self._clean_dataframe(df,sort), error_list
 
-        except:
-            pass
-            print ('ERROR ON PAGE: ' + str(post_number))
+        except Exception as e:
+            print ('{0} ERROR ON PAGE: {1}'.format(e, str(post_number)))
             error_list.append(post_number)
             return pd.DataFrame(), error_list
 
@@ -227,7 +226,7 @@ class IhubData(object):
             print ('complete, ' + str(missing_posts) + ' post(s) added')
 
         if len(final_error_list) != 0:
-            print('Errors encountered on the following pages: {0}'.format(", ".join(lst)))
+            print('Errors encountered on the following pages: {0}'.format(", ".join(final_error_list)))
         else:
             df.to_csv('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
 
@@ -235,11 +234,14 @@ class IhubData(object):
 
 if __name__ == '__main__':
 
-    kget = 'CaliPharms-Inc-KGET-10313'
-    cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
-    data = IhubData('cbyi',cbyi,verbose = 1)
-    data.pull_posts()
+    # kget = 'CaliPharms-Inc-KGET-10313'
+    # cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
+    # data = IhubData('cbyi',cbyi,verbose = 1)
+    # data.pull_posts()
 
+    df = pd.read_json('data/stock_list.json')
+    data = IhubData(df['sanp']['symbol'],df['sanp']['url'],verbose = 1)
+    data.pull_posts()
 
 
     # cbyi = 'Cal-Bay-International-Inc-CBYI-5520'
