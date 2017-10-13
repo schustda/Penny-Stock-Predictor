@@ -69,7 +69,7 @@ if __name__ == '__main__':
     num_days = 1200
     days_avg = 12
     threshold = 0.2
-
+    #sleep((12+5)*60*60)
     while True:
         t = time()
 
