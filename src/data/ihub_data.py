@@ -226,7 +226,7 @@ class IhubData(object):
             print ('complete, ' + str(missing_posts) + ' post(s) added')
 
         if len(final_error_list) != 0:
-            print('Errors encountered on the following pages: {0}'.format(final_error_list)
+            print('Errors encountered on the following pages: {0}'.format(final_error_list))
         else:
             df.to_csv('data/raw_data/ihub/message_boards/'+self.symbol+'.csv')
 
