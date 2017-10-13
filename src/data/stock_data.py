@@ -44,11 +44,13 @@ class StockData(object):
 
     def add_stock_data(self):
 
-        url = 'https://screener.fidelity.com/ftgw/etf/downloadCSV.jhtml?symbol='+str(self.ticker_symbol).upper()
-        df = pd.read_csv(url,index_col = 'Date').iloc[:-18]
-        self.df = self._add_zero_days(df)
-        self.df.to_csv('data/raw_data/stock/'+self.ticker_symbol+'.csv')
-
+        try:
+            url = 'https://screener.fidelity.com/ftgw/etf/downloadCSV.jhtml?symbol='+str(self.ticker_symbol).upper()
+            df = pd.read_csv(url,index_col = 'Date').iloc[:-18]
+            self.df = self._add_zero_days(df)
+            self.df.to_csv('data/raw_data/stock/'+self.ticker_symbol+'.csv')
+        except:
+            pass
 
 if __name__ == '__main__':
 
